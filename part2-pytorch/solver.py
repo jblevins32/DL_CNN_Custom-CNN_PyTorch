@@ -297,7 +297,16 @@ class Solver(object):
             #       2. Compute batch loss                                               #
             #       3. Compute gradients and update model parameters                    #
             #############################################################################
-            pass
+            
+            # Main forward pass of the training algorithm
+            output = self.model(data)
+            loss = self.criterion(output,target)
+            
+            # Main backward pass to Update gradients
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+            
             #############################################################################
             #                              END OF YOUR CODE                             #
             #############################################################################
@@ -306,7 +315,11 @@ class Solver(object):
             # TODO: Complete the body of training loop                                  #
             #       HINT: torch.no_grad()                                               #
             #############################################################################
-            pass
+            
+            with torch.no_grad():
+                output = self.model(data)
+                loss = self.criterion(output, target)
+            
             #############################################################################
             #                              END OF YOUR CODE                             #
             #############################################################################

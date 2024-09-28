@@ -45,7 +45,13 @@ def reweight(cls_num_list, beta=0.9999):
     #############################################################################
     # TODO: reweight each class by effective numbers                            #
     #############################################################################
-    per_cls_weights = None
+    
+    # First, calculate the effective number, the relative contribution of each sample to the training
+    E_n = [(1-beta**cls_num)/(1-beta) for cls_num in cls_num_list]
+    
+    # Get weights from each effective number by inverse rule
+    per_cls_weights = [1.0 / E_i for E_i in E_n]
+    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -57,8 +63,8 @@ class FocalLoss(nn.Module):
         super().__init__()
         assert gamma >= 0
         self.gamma = gamma
-        self.weight = weight
-
+        self.weight = weight #torch.tensor(weight, dtype=torch.float32)
+        
     def forward(self, input, target):
         """
         Implement forward of focal loss
@@ -71,7 +77,14 @@ class FocalLoss(nn.Module):
         # TODO: Implement forward pass of the focal loss                            #
         #############################################################################
 
+        # Get softmax probabilities
+        probs = F.softmax(input,dim=1)
+        target_probs = probs.gather(1, target.view(-1, 1)).squeeze(1)
+        focal_loss = -((1-target_probs)**self.gamma)*torch.log(target_probs)
+        focal_loss = focal_loss * self.weight[target.long()]
+        # self.weight = self.weight.tolist()
+
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
-        return loss
+        return focal_loss.mean()

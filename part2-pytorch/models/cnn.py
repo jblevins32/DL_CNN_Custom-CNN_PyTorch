@@ -41,6 +41,18 @@ class VanillaCNN(nn.Module):
         #       Max Pooling: 2x2 kernel, stride 2                                   #
         #############################################################################
 
+        self.flatten = nn.Flatten()
+        self.cnn = nn.Sequential(
+            
+            # Conv layer, 2D becuase input is image matrix
+            nn.Conv2d(in_channels=3,out_channels=32,kernel_size=7,stride=1,padding=0), # create a 32 feature map with a 7x7 kernel
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2,stride=2),
+        )
+        
+        self.fully_connected = nn.Sequential(
+            nn.Linear(32*13*13,out_features=10)
+        )
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -50,6 +62,10 @@ class VanillaCNN(nn.Module):
         #############################################################################
         # TODO: Implement forward pass of the network                               #
         #############################################################################
+
+        out = self.cnn(x)
+        out = self.flatten(out)
+        outs = self.fully_connected(out)
 
         #############################################################################
         #                              END OF YOUR CODE                             #
