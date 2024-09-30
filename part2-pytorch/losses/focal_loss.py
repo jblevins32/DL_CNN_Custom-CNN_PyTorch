@@ -46,12 +46,18 @@ def reweight(cls_num_list, beta=0.9999):
     # TODO: reweight each class by effective numbers                            #
     #############################################################################
     
+    # Notes: reweighting is done because some classes have more samples than others, so those majority classes will be trained more than the minorities
+    
     # First, calculate the effective number, the relative contribution of each sample to the training
     E_n = [(1-beta**cls_num)/(1-beta) for cls_num in cls_num_list]
     
     # Get weights from each effective number by inverse rule
-    per_cls_weights = [1.0 / E_i for E_i in E_n]
+    per_cls_weights = [1 / E_i for E_i in E_n]
     
+    # Turn weights into tensors and normalize
+    per_cls_weights = torch.tensor(per_cls_weights, dtype=torch.float32)
+    per_cls_weights = per_cls_weights / per_cls_weights.sum() * len(cls_num_list)
+
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -63,8 +69,8 @@ class FocalLoss(nn.Module):
         super().__init__()
         assert gamma >= 0
         self.gamma = gamma
-        self.weight = weight #torch.tensor(weight, dtype=torch.float32)
-        
+        self.weight = torch.tensor(weight, dtype=torch.float32)
+                    
     def forward(self, input, target):
         """
         Implement forward of focal loss
@@ -79,11 +85,14 @@ class FocalLoss(nn.Module):
 
         # Get softmax probabilities
         probs = F.softmax(input,dim=1)
-        target_probs = probs.gather(1, target.view(-1, 1)).squeeze(1)
-        focal_loss = -((1-target_probs)**self.gamma)*torch.log(target_probs)
-        focal_loss = focal_loss * self.weight[target.long()]
-        # self.weight = self.weight.tolist()
-
+        
+        # Get the predicated probabilities of the target classes
+        probs_t = probs.gather(dim=1, index=target.unsqueeze(1)).squeeze(1)
+        
+        # Calculate focal loss
+        focal_loss = -((1-probs_t)**self.gamma)*torch.log(probs_t)
+        focal_loss *= self.weight[target]
+        
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
