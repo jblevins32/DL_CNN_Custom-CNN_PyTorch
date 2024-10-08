@@ -8,4 +8,5 @@ This assignment implements a convolutional neural network from scratch and using
 - `part2-pytorch`:
     - `models`: Pytorch created NN models (Resnet provided)
     - `losses`: Focal loss implementation
-    - `solver.py`: Actual execution of pytorch models. See Juypter notebook for running solver.py!
+    - `solver.py`: Actual execution of pytorch models. See Juypter notebook block for running solver.py!
+    - `trainer.py`: Script for downloading data and training a model - non-Jupyter notebook
